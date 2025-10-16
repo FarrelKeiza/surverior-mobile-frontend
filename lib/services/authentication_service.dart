@@ -118,7 +118,7 @@ class AuthenticationService {
     required String domicile,
     required String marriedStatus,
     required bool isAcademic,
-    required String reason,
+    String? reason,
     String? profilePhotoUrl,
     String? referral,
   }) async {
@@ -128,7 +128,7 @@ class AuthenticationService {
       var response = await post(
         Uri.parse(apiURL),
         headers: header(false),
-        body: {
+        body: jsonEncode({
           "name": name,
           "email": email,
           "password": password,
@@ -141,11 +141,11 @@ class AuthenticationService {
           "birthdate": birthdate,
           "domicile": domicile,
           "married_status": marriedStatus,
-          "is_academic": isAcademic.toString(),
+          "is_academic": isAcademic,
           "reason": reason,
           "profile_photo_url": profilePhotoUrl,
           "referral": referral,
-        },
+        }),
       );
 
       var jsonObject = jsonDecode(response.body);
@@ -204,6 +204,28 @@ class AuthenticationService {
       }
 
       return AuthenticationModel.fromJson(jsonObject);
+    } catch (e) {
+      debugPrint(e.toString());
+      throw Exception("$e");
+    }
+  }
+
+  Future<bool> createPin(String email, String pin) async {
+    String apiURL = "${baseApiUrl()}/authentication/security/pin";
+
+    try {
+      var response = await post(
+        Uri.parse(apiURL),
+        headers: header(true),
+        body: {
+          "email": email,
+          "pin": pin,
+        },
+      );
+
+      var jsonObject = jsonDecode(response.body);
+
+      return jsonObject['success'];
     } catch (e) {
       debugPrint(e.toString());
       throw Exception("$e");

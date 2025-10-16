@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:surverior_frontend_mobile/utils/theme_util.dart';
 
-class CustomTextFormFieldWidget extends StatelessWidget {
+// class CustomTextFormFieldWidget extends StatelessWidget {
+class CustomTextFormFieldWidget extends HookWidget {
   const CustomTextFormFieldWidget({
     super.key,
     required this.hintText,
@@ -53,6 +55,8 @@ class CustomTextFormFieldWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isObscureText = useState(true);
+
     return TextFormField(
       style: secondaryTextStyle.copyWith(
         fontSize: 14,
@@ -62,7 +66,7 @@ class CustomTextFormFieldWidget extends StatelessWidget {
       enabled: isEnabled,
       controller: controller,
       keyboardType: textInputType,
-      obscureText: isObscureText,
+      obscureText: isPasswordField && isObscureText.value,
       onFieldSubmitted: onFieldSubmitted,
       inputFormatters: textInputType == TextInputType.number
           ? [
@@ -96,10 +100,13 @@ class CustomTextFormFieldWidget extends StatelessWidget {
                 : prefixIcon,
         suffixIcon: isPasswordField
             ? GestureDetector(
-                onTap: setObscureText,
+                // onTap: setObscureText,
+                onTap: () {
+                  isObscureText.value = !isObscureText.value;
+                },
                 child: Icon(
-                  isObscureText ? Icons.visibility_off : Icons.visibility,
-                  color: isObscureText ? Colors.grey[400] : primaryColor,
+                  isObscureText.value ? Icons.visibility_off : Icons.visibility,
+                  color: isObscureText.value ? Colors.grey[400] : primaryColor,
                 ),
               )
             : suffixIcon,

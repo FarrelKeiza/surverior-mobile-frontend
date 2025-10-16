@@ -1,4 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
 // import 'package:flutter/material.dart';
 import 'package:surverior_frontend_mobile/models/authentication_model.dart';
 import 'package:surverior_frontend_mobile/models/otp_model.dart';
@@ -7,19 +10,35 @@ import 'package:surverior_frontend_mobile/services/authentication_service.dart';
 class AuthenticationProvider with ChangeNotifier {
   final _authenticationService = AuthenticationService();
   AuthenticationModel? _authenticationModel;
+
   AuthenticationModel? get authenticationModel => _authenticationModel;
   OtpModel? _otpModel;
+
   OtpModel? get otpModel => _otpModel;
   bool _isObsecure = true;
+
   bool get isObsecure => _isObsecure;
   bool _isObsecureConfirmation = true;
+
   bool get isObsecureConfirmation => _isObsecureConfirmation;
   bool _isLoading = false;
+
   bool get isLoading => _isLoading;
 
   // OTP error state
   String _otpError = '';
+
   String get otpError => _otpError;
+
+  // Pin
+  String? _pin;
+
+  String? get pin => _pin;
+
+  set pin(String? value) {
+    _pin = value;
+    notifyListeners();
+  }
 
   // Signup data storage
   String? _signUpName;
@@ -46,25 +65,45 @@ class AuthenticationProvider with ChangeNotifier {
 
   // Getters for signup data
   String? get signUpName => _signUpName;
+
   String? get signUpEmail => _signUpEmail;
+
   String? get signUpPassword => _signUpPassword;
+
   String? get signUpPasswordConfirmation => _signUpPasswordConfirmation;
+
   String? get signUpRoleId => _signUpRoleId;
+
   String? get signUpEducationId => _signUpEducationId;
+
   String? get signUpReferralId => _signUpReferralId;
+
   String? get signUpNik => _signUpNik;
+
   String? get signUpGender => _signUpGender;
+
   String? get signUpBirthdate => _signUpBirthdate;
+
   String? get signUpDomicile => _signUpDomicile;
+
   String? get signUpMarriedStatus => _signUpMarriedStatus;
+
   bool? get signUpIsAcademic => _signUpIsAcademic;
+
   String? get signUpReason => _signUpReason;
+
   String? get signUpProfilePhotoUrl => _signUpProfilePhotoUrl;
+
   String? get signUpReferral => _signUpReferral;
+
   String? get signUpAcademicId => _signUpAcademicId;
+
   String? get signUpAcademicType => _signUpAcademicType;
+
   String? get signUpDateIn => _signUpDateIn;
+
   String? get signUpCollege => _signUpCollege;
+
   String? get signUpDepartment => _signUpDepartment;
 
   checkObsecure() {
@@ -196,7 +235,8 @@ class AuthenticationProvider with ChangeNotifier {
     required String domicile,
     required String marriedStatus,
     required bool isAcademic,
-    required String reason,
+    // required String reason,
+    String? reason,
     String? profilePhotoUrl,
     String? referral,
   }) async {
@@ -243,6 +283,7 @@ class AuthenticationProvider with ChangeNotifier {
     required String password,
     required String passwordConfirmation,
   }) {
+    _signUpRoleId = "12345678-9abc-def0-1234-56789abcdef0";
     _signUpName = name;
     _signUpEmail = email;
     _signUpPassword = password;
@@ -276,6 +317,39 @@ class AuthenticationProvider with ChangeNotifier {
     _signUpReason = reason;
     _signUpProfilePhotoUrl = profilePhotoUrl;
     _signUpReferral = referral;
+    notifyListeners();
+  }
+
+  void setPersonalInfo1({
+    required String fullName,
+    required String nik,
+    required String birthdate,
+    required String gender,
+  }) {
+    _signUpName = fullName;
+    _signUpNik = nik;
+    _signUpBirthdate = birthdate;
+    _signUpGender = gender;
+    notifyListeners();
+  }
+
+  void setPersonalInfo2({
+    required String domicile,
+    required String marriedStatus,
+    required String lastEducation,
+    required bool isAcademic,
+  }) {
+    _signUpDomicile = domicile;
+    _signUpMarriedStatus = marriedStatus;
+    _signUpEducationId = lastEducation;
+    _signUpIsAcademic = isAcademic;
+    notifyListeners();
+  }
+
+  void setReasonSigningUp({
+    required String reason,
+  }) {
+    _signUpReason = reason;
     notifyListeners();
   }
 
@@ -432,7 +506,7 @@ class AuthenticationProvider with ChangeNotifier {
       domicile: _signUpDomicile!,
       marriedStatus: _signUpMarriedStatus!,
       isAcademic: _signUpIsAcademic!,
-      reason: _signUpReason!,
+      reason: _signUpReason,
       profilePhotoUrl: _signUpProfilePhotoUrl,
       referral: _signUpReferral,
     );
@@ -462,5 +536,40 @@ class AuthenticationProvider with ChangeNotifier {
     _signUpCollege = null;
     _signUpDepartment = null;
     notifyListeners();
+  }
+
+  Future<void> createPin(BuildContext context) async {
+    try {
+      final success =
+          await _authenticationService.createPin(_signUpEmail!, _pin!);
+      if (!context.mounted) return;
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('PIN created successfully'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to create PIN'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error creating PIN: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } finally {
+      notifyListeners();
+    }
   }
 }
