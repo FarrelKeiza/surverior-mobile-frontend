@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:surverior_frontend_mobile/pages/authentication/select_authentication_page.dart';
 import 'package:surverior_frontend_mobile/providers/authentication_provider.dart';
 import 'package:surverior_frontend_mobile/providers/category_provider.dart';
+import 'package:surverior_frontend_mobile/providers/college_provider.dart';
+import 'package:surverior_frontend_mobile/providers/department_provider.dart';
 import 'package:surverior_frontend_mobile/providers/education_provider.dart';
 import 'package:surverior_frontend_mobile/providers/navigation_bar_provider.dart';
 import 'package:surverior_frontend_mobile/providers/questionnaire_provider.dart';
@@ -50,7 +52,13 @@ class Surverior extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (_) => EducationProvider(),
-        )
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CollegeProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => DepartmentProvider(),
+        ),
       ],
       child: Builder(
         builder: (context) {

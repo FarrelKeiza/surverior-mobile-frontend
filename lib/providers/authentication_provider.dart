@@ -62,6 +62,8 @@ class AuthenticationProvider with ChangeNotifier {
   String? _signUpDateIn;
   String? _signUpCollege;
   String? _signUpDepartment;
+  String? _signUpCollegeId;
+  String? _signUpDepartmentId;
 
   // Getters for signup data
   String? get signUpName => _signUpName;
@@ -105,6 +107,10 @@ class AuthenticationProvider with ChangeNotifier {
   String? get signUpCollege => _signUpCollege;
 
   String? get signUpDepartment => _signUpDepartment;
+
+  String? get signUpCollegeId => _signUpCollegeId;
+
+  String? get signUpDepartmentId => _signUpDepartmentId;
 
   checkObsecure() {
     _isObsecure = !_isObsecure;
@@ -179,6 +185,8 @@ class AuthenticationProvider with ChangeNotifier {
     required String dateIn,
     required String college,
     required String department,
+    required String collegeId,
+    required String departmentId,
   }) async {
     checkLoading(true);
 
@@ -205,6 +213,8 @@ class AuthenticationProvider with ChangeNotifier {
         dateIn: dateIn,
         college: college,
         department: department,
+        collegeId: collegeId,
+        departmentId: departmentId,
       );
       _authenticationModel = data;
 
@@ -359,12 +369,16 @@ class AuthenticationProvider with ChangeNotifier {
     required String dateIn,
     required String college,
     required String department,
+    required String collegeId,
+    required String departmentId,
   }) {
     _signUpAcademicId = academicId;
     _signUpAcademicType = academicType;
     _signUpDateIn = dateIn;
     _signUpCollege = college;
     _signUpDepartment = department;
+    _signUpCollegeId = collegeId;
+    _signUpDepartmentId = departmentId;
     notifyListeners();
   }
 
@@ -445,7 +459,9 @@ class AuthenticationProvider with ChangeNotifier {
         _signUpAcademicType == null ||
         _signUpDateIn == null ||
         _signUpCollege == null ||
-        _signUpDepartment == null) {
+        _signUpDepartment == null ||
+        _signUpCollegeId == null ||
+        _signUpDepartmentId == null) {
       throw Exception("Data signup tidak lengkap");
     }
 
@@ -471,6 +487,8 @@ class AuthenticationProvider with ChangeNotifier {
       dateIn: _signUpDateIn!,
       college: _signUpCollege!,
       department: _signUpDepartment!,
+      collegeId: _signUpCollegeId!,
+      departmentId: _signUpDepartmentId!,
     );
   }
 
