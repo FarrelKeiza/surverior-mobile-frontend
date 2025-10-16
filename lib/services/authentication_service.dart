@@ -16,10 +16,14 @@ class AuthenticationService {
       var response = await post(
         Uri.parse(apiURL),
         headers: header(false),
-        body: {
+        // body: {
+        //   "email": email,
+        //   "password": password,
+        // },
+        body: jsonEncode({
           "email": email,
           "password": password,
-        },
+        }),
       );
 
       var jsonObject = jsonDecode(response.body);
@@ -58,6 +62,8 @@ class AuthenticationService {
     required String dateIn,
     required String college,
     required String department,
+    required String collegeId,
+    required String departmentId,
   }) async {
     String apiURL = "${baseApiUrl()}/authentication/sign-up";
 
@@ -65,7 +71,7 @@ class AuthenticationService {
       var response = await post(
         Uri.parse(apiURL),
         headers: header(false),
-        body: {
+        body: jsonEncode({
           "name": name,
           "email": email,
           "password": password,
@@ -78,7 +84,7 @@ class AuthenticationService {
           "birthdate": birthdate,
           "domicile": domicile,
           "married_status": marriedStatus,
-          "is_academic": isAcademic.toString(),
+          "is_academic": isAcademic,
           "reason": reason,
           "profile_photo_url": profilePhotoUrl,
           "referral": referral,
@@ -87,7 +93,9 @@ class AuthenticationService {
           "date_in": dateIn,
           "college": college,
           "department": department,
-        },
+          "college_id": collegeId,
+          "department_id": departmentId,
+        }),
       );
 
       var jsonObject = jsonDecode(response.body);
@@ -169,9 +177,11 @@ class AuthenticationService {
       var response = await post(
         Uri.parse(apiURL),
         headers: header(false),
-        body: {
+        // body: {
+        body: jsonEncode({
           "email": email,
-        },
+        }),
+        // },
       );
 
       var jsonObject = jsonDecode(response.body);
@@ -190,10 +200,14 @@ class AuthenticationService {
       var response = await post(
         Uri.parse(apiURL),
         headers: header(false),
-        body: {
+        // body: {
+        //   "email": email,
+        //   "otp": otp,
+        // },
+        body: jsonEncode({
           "email": email,
           "otp": otp,
-        },
+        }),
       );
 
       var jsonObject = jsonDecode(response.body);
@@ -217,10 +231,10 @@ class AuthenticationService {
       var response = await post(
         Uri.parse(apiURL),
         headers: header(true),
-        body: {
+        body: jsonEncode({
           "email": email,
           "pin": pin,
-        },
+        }),
       );
 
       var jsonObject = jsonDecode(response.body);
