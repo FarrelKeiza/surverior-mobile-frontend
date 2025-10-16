@@ -11,13 +11,17 @@ class CustomTextFormFieldLabelledWidget extends StatelessWidget {
     this.showLabel = true,
     this.prefixIcon,
     this.suffixIcon,
+    this.enableDateInput = false,
   });
 
   final String label;
   final TextEditingController controller;
   final TextInputType textInputType;
   final bool showLabel;
-  final Widget? prefixIcon, suffixIcon;
+  // final Widget? prefixIcon, suffixIcon;
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
+  final bool enableDateInput;
 
   String? _validateNumberInput(String? value) {
     if (textInputType == TextInputType.number &&
@@ -35,6 +39,18 @@ class CustomTextFormFieldLabelledWidget extends StatelessWidget {
       }
     }
     return null;
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      controller.text = "${picked.day}/${picked.month}/${picked.year}";
+    }
   }
 
   @override
@@ -62,12 +78,16 @@ class CustomTextFormFieldLabelledWidget extends StatelessWidget {
           TextFormField(
             cursorColor: primaryColor,
             controller: controller,
-            keyboardType: textInputType,
+            // keyboardType: textInputType,
+            keyboardType: enableDateInput ? TextInputType.none : textInputType,
             validator: _validateNumberInput,
+            readOnly: enableDateInput,
+            onTap: enableDateInput ? () => _selectDate(context) : null,
             style: secondaryTextStyle.copyWith(
               fontSize: 14,
             ),
-            inputFormatters: textInputType == TextInputType.number
+              // inputFormatters: textInputType == TextInputType.number
+            inputFormatters: textInputType == TextInputType.number && !enableDateInput
                 ? [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
                   ]
@@ -98,10 +118,17 @@ class CustomTextFormFieldLabelledWidget extends StatelessWidget {
                   ? null
                   : prefixIcon,
               suffixIcon: suffixIcon is SizedBox &&
-                      (suffixIcon as SizedBox).width == 0.0 &&
-                      (suffixIcon as SizedBox).height == 0.0
+                  (suffixIcon as SizedBox).width == 0.0 &&
+                  (suffixIcon as SizedBox).height == 0.0
                   ? null
                   : suffixIcon,
+              // suffixIcon: enableDateInput
+              //     ? const Icon(Icons.calendar_today)
+              //     : (suffixIcon is SizedBox &&
+              //             (suffixIcon as SizedBox).width == 0.0 &&
+              //             (suffixIcon as SizedBox).height == 0.0
+              //         ? null
+              //         : suffixIcon),
             ),
           ),
         ],

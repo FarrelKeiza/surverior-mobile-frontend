@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:surverior_frontend_mobile/pages/authentication/select_authentication_page.dart';
 import 'package:surverior_frontend_mobile/providers/authentication_provider.dart';
+import 'package:surverior_frontend_mobile/providers/category_provider.dart';
+import 'package:surverior_frontend_mobile/providers/education_provider.dart';
 import 'package:surverior_frontend_mobile/providers/navigation_bar_provider.dart';
 import 'package:surverior_frontend_mobile/providers/questionnaire_provider.dart';
 import 'package:surverior_frontend_mobile/utils/navigator_util.dart';
@@ -43,6 +45,12 @@ class Surverior extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => QuestionnaireProvider(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => CategoryProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => EducationProvider(),
+        )
       ],
       child: Builder(
         builder: (context) {
