@@ -347,6 +347,7 @@ class AcademicIdentityPage extends HookWidget {
                     //   ),
                     // ),
                     CustomDropdownButtonLabelledWidget(
+                      paddingBottom: 0,
                       label: "Asal Kampus",
                       showLabel: false,
                       prefixIcon: Icon(
@@ -388,6 +389,7 @@ class AcademicIdentityPage extends HookWidget {
                     //   ),
                     // ),
                     CustomDropdownButtonLabelledWidget(
+                      paddingBottom: 0,
                       label: "Fakultas/Jurusan",
                       showLabel: false,
                       prefixIcon: Icon(
