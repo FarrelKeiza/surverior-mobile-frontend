@@ -6,6 +6,7 @@ import 'package:surverior_frontend_mobile/pages/authentication/otp_validation_pa
 import 'package:surverior_frontend_mobile/pages/authentication/pin_page.dart';
 import 'package:surverior_frontend_mobile/pages/authentication/private_identity2_page.dart';
 import 'package:surverior_frontend_mobile/pages/authentication/private_identity_page.dart';
+import 'package:surverior_frontend_mobile/pages/authentication/reason_page.dart';
 import 'package:surverior_frontend_mobile/pages/authentication/reason_signing_up_page.dart';
 import 'package:surverior_frontend_mobile/pages/authentication/select_authentication_page.dart';
 import 'package:surverior_frontend_mobile/pages/authentication/sign_in_page.dart';
@@ -24,6 +25,7 @@ class NavigatorUtil {
   static const String pinPage = '/pin-page';
   static const String otpValidation = '/otp-validation';
   static const String reasonSigningUp = '/reason-signing-up';
+  static const String reasonPage = '/reason-page';
 
   // Navigation Methods with Page Transition
   static void pushToSelectAuthentication(BuildContext context) {
@@ -106,6 +108,15 @@ class NavigatorUtil {
       PageTransition(
         type: PageTransitionType.rightToLeft,
         child: const ReasonSigningUpPage(),
+      ),
+    );
+  }
+
+  static void pushToReasonPage(BuildContext context) {
+    Navigator.of(context).push(
+      PageTransition(
+        type: PageTransitionType.rightToLeft,
+        child: const ReasonPage(),
       ),
     );
   }

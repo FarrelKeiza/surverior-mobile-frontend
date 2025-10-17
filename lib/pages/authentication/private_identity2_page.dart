@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
 import 'package:surverior_frontend_mobile/pages/authentication/sign_in_page.dart';
+import 'package:surverior_frontend_mobile/providers/authentication_provider.dart';
 import 'package:surverior_frontend_mobile/utils/navigator_util.dart';
 import 'package:surverior_frontend_mobile/utils/theme_util.dart';
 import 'package:surverior_frontend_mobile/widgets/background_gradient_widget.dart';
@@ -10,7 +11,6 @@ import 'package:surverior_frontend_mobile/widgets/custom_dropdown_button_widget.
 import 'package:surverior_frontend_mobile/widgets/custom_question_auth_button_widget.dart';
 import 'package:surverior_frontend_mobile/widgets/custom_text_form_field_widget.dart';
 import 'package:surverior_frontend_mobile/providers/education_provider.dart';
-import 'package:surverior_frontend_mobile/providers/authentication_provider.dart';
 
 // class PrivateIdentity2Page extends StatefulWidget {
 //   const PrivateIdentity2Page({super.key});

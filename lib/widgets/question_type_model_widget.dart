@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:image_picker/image_picker.dart';
@@ -755,10 +754,12 @@ class QuestionTypeImage extends HookWidget {
         debugPrint('pickImage error: $e');
         debugPrintStack(stackTrace: st);
 
-        final message = e?.toString() ?? 'Unknown error';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memilih gambar: $message')),
-        );
+        final message = e.toString();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memilih gambar: $message')),
+          );
+        }
       } finally {
         isLoading.value = false;
       }

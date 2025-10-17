@@ -1,8 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-// import 'package:flutter/material.dart';
 import 'package:surverior_frontend_mobile/models/authentication_model.dart';
 import 'package:surverior_frontend_mobile/models/otp_model.dart';
 import 'package:surverior_frontend_mobile/services/authentication_service.dart';
@@ -271,6 +268,7 @@ class AuthenticationProvider with ChangeNotifier {
         profilePhotoUrl: profilePhotoUrl,
         referral: referral,
       );
+
       _authenticationModel = data;
 
       if (_authenticationModel?.metadata?.code == 201) {
@@ -380,6 +378,21 @@ class AuthenticationProvider with ChangeNotifier {
     _signUpCollegeId = collegeId;
     _signUpDepartmentId = departmentId;
     notifyListeners();
+  }
+
+  // Method untuk update reason saja
+  void setReason(String reason) {
+    _signUpReason = reason;
+    notifyListeners();
+  }
+
+  // Method untuk determine final signup flow
+  Future<bool> performFinalSignUp() async {
+    if (_signUpIsAcademic == true) {
+      return await finalSignUpAcademic();
+    } else {
+      return await finalSignUpNonAcademic();
+    }
   }
 
   // Method untuk mengirim OTP

@@ -203,7 +203,7 @@ class CreateMetadataQuestionnairePage extends HookWidget {
     }, []);
 
     final categories = context.watch<CategoryProvider>().categories;
-    final isLoading = context.watch<CategoryProvider>().isLoading;
+    // final isLoading = context.watch<CategoryProvider>().isLoading;
     final error = context.watch<CategoryProvider>().error;
 
     return Scaffold(

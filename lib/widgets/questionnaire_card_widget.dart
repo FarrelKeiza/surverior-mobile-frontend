@@ -1,18 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:surverior_frontend_mobile/models/questionnaire_model.dart';
 import 'package:surverior_frontend_mobile/utils/theme_util.dart';
 import 'package:surverior_frontend_mobile/widgets/custom_button_widget.dart';
 
 class QuestionnaireCardWidget extends StatelessWidget {
   const QuestionnaireCardWidget({
     super.key,
+    this.questionnaire,
     this.isProgress = false,
     this.isOwned = false,
   });
 
+  final QuestionnaireModel? questionnaire;
   final bool isProgress, isOwned;
 
   @override
   Widget build(BuildContext context) {
+    // Helper function to format currency
+    String formatCurrency(double? value) {
+      if (value == null) return 'Gratis';
+      String formatted = value.toStringAsFixed(0);
+      String result = '';
+      int count = 0;
+
+      for (int i = formatted.length - 1; i >= 0; i--) {
+        if (count > 0 && count % 3 == 0) {
+          result = '.$result';
+        }
+        result = formatted[i] + result;
+        count++;
+      }
+
+      return result;
+    }
+
+    // Helper function to format date
+    String formatDate(String? dateString) {
+      if (dateString == null) return 'Tidak ada deadline';
+
+      try {
+        DateTime date = DateTime.parse(dateString);
+        List<String> months = [
+          '',
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'Mei',
+          'Jun',
+          'Jul',
+          'Agu',
+          'Sep',
+          'Okt',
+          'Nov',
+          'Des'
+        ];
+
+        return '${date.day} ${months[date.month]} ${date.year}';
+      } catch (e) {
+        return dateString;
+      }
+    }
+
     return Padding(
       padding: EdgeInsets.only(bottom: defaultPadding),
       child: Stack(
@@ -33,49 +82,70 @@ class QuestionnaireCardWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Judul Kuesioner",
+                    questionnaire?.title ?? "Judul Kuesioner",
                     style: secondaryTextStyle.copyWith(
                       fontSize: 16,
                       fontWeight: bold,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(
                     height: 5,
                   ),
                   Row(
                     children: [
-                      Row(
-                        children: [
-                          gradientWidgetColorMask(
-                            Icon(isOwned
-                                ? Icons.calendar_month_rounded
-                                : Icons.person),
-                          ),
-                          const SizedBox(
-                            width: 5,
-                          ),
-                          Text(
-                            isOwned ? "13 Juli 2025" : "Surveyor",
-                            style: secondaryTextStyle,
-                          ),
-                        ],
+                      // Creator or deadline info
+                      Expanded(
+                        flex: 2,
+                        child: Row(
+                          children: [
+                            gradientWidgetColorMask(
+                              Icon(isOwned
+                                  ? Icons.calendar_month_rounded
+                                  : Icons.person),
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            Expanded(
+                              child: Text(
+                                isOwned
+                                    ? formatDate(questionnaire?.deadline)
+                                    : questionnaire?.user?.name ?? "Surveyor",
+                                style: secondaryTextStyle,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(
                         width: 10,
                       ),
-                      Row(
-                        children: [
-                          Image.asset("assets/png/category.png"),
-                          const SizedBox(
-                            width: 5,
-                          ),
-                          Text(
-                            "Kategori",
-                            style: secondaryTextStyle,
-                          ),
-                        ],
+                      // Category
+                      Expanded(
+                        flex: 2,
+                        child: Row(
+                          children: [
+                            Image.asset("assets/png/category.png"),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            Expanded(
+                              child: Text(
+                                questionnaire?.category?.name ?? "Kategori",
+                                style: secondaryTextStyle,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      const Spacer(),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      // Reward
                       Row(
                         children: [
                           Image.asset("assets/png/coins-2.png"),
@@ -83,7 +153,7 @@ class QuestionnaireCardWidget extends StatelessWidget {
                             width: 5,
                           ),
                           Text(
-                            "120 poin",
+                            formatCurrency(questionnaire?.reward),
                             style: secondaryTextStyle,
                           ),
                         ],
@@ -97,7 +167,8 @@ class QuestionnaireCardWidget extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          "Lorem ipsum dolor sit amet, consectetur adipiscing.",
+                          questionnaire?.description ??
+                              "Deskripsi kuesioner tidak tersedia",
                           style: secondaryTextStyle,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,

@@ -266,8 +266,9 @@ class _OtpValidationPageState extends State<OtpValidationPage> {
                                 style: primaryTextStyle.copyWith(
                                   color: authProvider.isLoading
                                       ? Colors.grey
-                                      : tertiaryColor,
+                                      : white,
                                   decoration: TextDecoration.underline,
+                                  decorationColor: white,
                                 ),
                               ),
                             ),

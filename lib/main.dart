@@ -10,11 +10,26 @@ import 'package:surverior_frontend_mobile/providers/department_provider.dart';
 import 'package:surverior_frontend_mobile/providers/education_provider.dart';
 import 'package:surverior_frontend_mobile/providers/navigation_bar_provider.dart';
 import 'package:surverior_frontend_mobile/providers/questionnaire_provider.dart';
-import 'package:surverior_frontend_mobile/utils/navigator_util.dart';
+import 'package:surverior_frontend_mobile/providers/user_provider.dart';
+import 'package:surverior_frontend_mobile/providers/wallet_provider.dart';
+import 'package:surverior_frontend_mobile/utils/data_util.dart';
+// import 'package:surverior_frontend_mobile/utils/navigator_util.dart';
 import 'package:surverior_frontend_mobile/utils/theme_util.dart';
+import 'package:surverior_frontend_mobile/widgets/navigation_bar_widget.dart';
 
-void main() {
+String token = "";
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  token = await storage.read(
+        key: "token",
+      ) ??
+      "";
+
+  if (kDebugMode) {
+    print("$token ini token");
+  }
 
   LicenseRegistry.addLicense(() async* {
     final license = await rootBundle.loadString('google_fonts/OFL.txt');
@@ -59,6 +74,12 @@ class Surverior extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => DepartmentProvider(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => UserProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => WalletProvider(),
+        ),
       ],
       child: Builder(
         builder: (context) {
@@ -68,9 +89,11 @@ class Surverior extends StatelessWidget {
               colorScheme: ColorScheme.fromSeed(seedColor: white),
               useMaterial3: true,
             ),
-            initialRoute: NavigatorUtil.selectAuthentication,
-            onGenerateRoute: NavigatorUtil.generateRoute,
-            home: const SelectAuthenticationPage(),
+            // initialRoute: NavigatorUtil.selectAuthentication,
+            // onGenerateRoute: NavigatorUtil.generateRoute,
+            home: token != ""
+                ? const NavigationBarWidget()
+                : const SelectAuthenticationPage(),
           );
         },
       ),

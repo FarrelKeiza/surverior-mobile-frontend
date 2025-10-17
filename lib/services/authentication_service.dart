@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 import 'package:surverior_frontend_mobile/models/authentication_model.dart';
 import 'package:surverior_frontend_mobile/models/otp_model.dart';
@@ -16,10 +16,6 @@ class AuthenticationService {
       var response = await post(
         Uri.parse(apiURL),
         headers: header(false),
-        // body: {
-        //   "email": email,
-        //   "password": password,
-        // },
         body: jsonEncode({
           "email": email,
           "password": password,
@@ -29,8 +25,39 @@ class AuthenticationService {
       var jsonObject = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        await storage.write(
-            key: "token", value: jsonObject['data']['access_token']);
+        // Safely check if access_token exists before storing
+        final accessToken = jsonObject['data']?['access_token'];
+        if (kDebugMode) {
+          print(accessToken);
+        }
+        if (accessToken != null) {
+          await storage.write(key: "token", value: accessToken.toString());
+          final token = await storage.read(key: "token");
+          if (kDebugMode) {
+            print("$token ini token");
+          }
+        }
+      } else if (response.statusCode == 422 || response.statusCode == 401) {
+        // Handle validation errors or authentication errors
+        String errorMessage =
+            jsonObject['metadata']?['message'] ?? 'Authentication failed';
+
+        // Check for specific field errors
+        if (jsonObject['data'] != null) {
+          if (jsonObject['data']['email'] != null) {
+            List emailErrors = jsonObject['data']['email'];
+            if (emailErrors.isNotEmpty) {
+              errorMessage = emailErrors.first.toString();
+            }
+          } else if (jsonObject['data']['password'] != null) {
+            List passwordErrors = jsonObject['data']['password'];
+            if (passwordErrors.isNotEmpty) {
+              errorMessage = passwordErrors.first.toString();
+            }
+          }
+        }
+
+        throw Exception(errorMessage);
       }
 
       return AuthenticationModel.fromJson(jsonObject);
@@ -71,7 +98,7 @@ class AuthenticationService {
       var response = await post(
         Uri.parse(apiURL),
         headers: header(false),
-        body: jsonEncode({
+        body: {
           "name": name,
           "email": email,
           "password": password,
@@ -95,14 +122,30 @@ class AuthenticationService {
           "department": department,
           "college_id": collegeId,
           "department_id": departmentId,
-        }),
-      );
+        });
 
       var jsonObject = jsonDecode(response.body);
 
       if (response.statusCode == 201) {
-        await storage.write(
-            key: "token", value: jsonObject['data']['access_token']);
+        // Safely check if access_token exists before storing
+        final accessToken = jsonObject['data']?['access_token'];
+        if (accessToken != null) {
+          await storage.write(key: "token", value: accessToken.toString());
+        }
+      } else if (response.statusCode == 422) {
+        // Handle validation errors
+        String errorMessage =
+            jsonObject['metadata']?['message'] ?? 'Validation failed';
+
+        // Check for specific email error
+        if (jsonObject['data'] != null && jsonObject['data']['email'] != null) {
+          List emailErrors = jsonObject['data']['email'];
+          if (emailErrors.isNotEmpty) {
+            errorMessage = emailErrors.first.toString();
+          }
+        }
+
+        throw Exception(errorMessage);
       }
 
       return AuthenticationModel.fromJson(jsonObject);
@@ -159,8 +202,25 @@ class AuthenticationService {
       var jsonObject = jsonDecode(response.body);
 
       if (response.statusCode == 201) {
-        await storage.write(
-            key: "token", value: jsonObject['data']['access_token']);
+        // Safely check if access_token exists before storing
+        final accessToken = jsonObject['data']?['access_token'];
+        if (accessToken != null) {
+          await storage.write(key: "token", value: accessToken.toString());
+        }
+      } else if (response.statusCode == 422) {
+        // Handle validation errors
+        String errorMessage =
+            jsonObject['metadata']?['message'] ?? 'Validation failed';
+
+        // Check for specific email error
+        if (jsonObject['data'] != null && jsonObject['data']['email'] != null) {
+          List emailErrors = jsonObject['data']['email'];
+          if (emailErrors.isNotEmpty) {
+            errorMessage = emailErrors.first.toString();
+          }
+        }
+
+        throw Exception(errorMessage);
       }
 
       return AuthenticationModel.fromJson(jsonObject);
@@ -177,11 +237,9 @@ class AuthenticationService {
       var response = await post(
         Uri.parse(apiURL),
         headers: header(false),
-        // body: {
         body: jsonEncode({
           "email": email,
         }),
-        // },
       );
 
       var jsonObject = jsonDecode(response.body);
@@ -200,10 +258,6 @@ class AuthenticationService {
       var response = await post(
         Uri.parse(apiURL),
         headers: header(false),
-        // body: {
-        //   "email": email,
-        //   "otp": otp,
-        // },
         body: jsonEncode({
           "email": email,
           "otp": otp,
@@ -213,8 +267,32 @@ class AuthenticationService {
       var jsonObject = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        await storage.write(
-            key: "token", value: jsonObject['data']['access_token']);
+        // Safely check if access_token exists before storing
+        final accessToken = jsonObject['data']?['access_token'];
+        if (accessToken != null) {
+          await storage.write(key: "token", value: accessToken.toString());
+        }
+      } else if (response.statusCode == 422 || response.statusCode == 400) {
+        // Handle validation errors or OTP errors
+        String errorMessage =
+            jsonObject['metadata']?['message'] ?? 'OTP verification failed';
+
+        // Check for specific field errors
+        if (jsonObject['data'] != null) {
+          if (jsonObject['data']['otp'] != null) {
+            List otpErrors = jsonObject['data']['otp'];
+            if (otpErrors.isNotEmpty) {
+              errorMessage = otpErrors.first.toString();
+            }
+          } else if (jsonObject['data']['email'] != null) {
+            List emailErrors = jsonObject['data']['email'];
+            if (emailErrors.isNotEmpty) {
+              errorMessage = emailErrors.first.toString();
+            }
+          }
+        }
+
+        throw Exception(errorMessage);
       }
 
       return AuthenticationModel.fromJson(jsonObject);
@@ -231,10 +309,10 @@ class AuthenticationService {
       var response = await post(
         Uri.parse(apiURL),
         headers: header(true),
-        body: jsonEncode({
+        body: {
           "email": email,
           "pin": pin,
-        }),
+        },
       );
 
       var jsonObject = jsonDecode(response.body);

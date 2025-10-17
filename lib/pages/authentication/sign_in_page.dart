@@ -6,7 +6,6 @@ import 'package:surverior_frontend_mobile/pages/authentication/sign_up_page.dart
 import 'package:surverior_frontend_mobile/utils/navigator_util.dart';
 import 'package:surverior_frontend_mobile/utils/theme_util.dart';
 import 'package:surverior_frontend_mobile/widgets/background_gradient_widget.dart';
-import 'package:surverior_frontend_mobile/widgets/custom_button_widget.dart';
 import 'package:surverior_frontend_mobile/widgets/custom_question_auth_button_widget.dart';
 import 'package:surverior_frontend_mobile/widgets/custom_text_form_field_widget.dart';
 import 'package:surverior_frontend_mobile/widgets/navigation_bar_widget.dart';
@@ -251,7 +250,10 @@ class SignInPage extends HookWidget {
                                       Colors.white),
                                 ),
                               )
-                            : const Text("Masuk", style: TextStyle(color: Colors.white),),
+                            : Text(
+                                "Masuk",
+                                style: primaryTextStyle,
+                              ),
                       ),
                     ),
 

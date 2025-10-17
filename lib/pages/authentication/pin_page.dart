@@ -110,7 +110,7 @@ class PinPage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController _pinController = useTextEditingController();
+    final TextEditingController pinController = useTextEditingController();
 
     return BackgroundGradientWidget(
       child: SingleChildScrollView(
@@ -167,7 +167,7 @@ class PinPage extends HookWidget {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      controller: _pinController,
+                      controller: pinController,
                     ),
                     SizedBox(
                       height: defaultPadding,
@@ -176,7 +176,7 @@ class PinPage extends HookWidget {
                       text: "Lanjut",
                       color: secondaryColor,
                       onPressed: () async {
-                        final pin = _pinController.text.trim();
+                        final pin = pinController.text.trim();
                         if (pin.length != 6) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
