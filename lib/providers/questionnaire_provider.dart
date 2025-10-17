@@ -66,6 +66,9 @@ class QuestionnaireProvider with ChangeNotifier {
   String? _currentCategory;
   String? _currentSearch;
 
+  // Selected category for filtering
+  String? _selectedCategoryName;
+
   // Page navigation
   int _currentPage = 1;
   int _maxPage = 1;
@@ -89,6 +92,7 @@ class QuestionnaireProvider with ChangeNotifier {
   QuestionnaireMetaData? get questionnaireMeta =>
       _questionnaireResponse?.data?.meta;
   int get currentPageData => _currentPageData;
+  String? get selectedCategoryName => _selectedCategoryName;
 
   // Getters
   int get currentPage => _currentPage;
@@ -404,6 +408,85 @@ class QuestionnaireProvider with ChangeNotifier {
     );
   }
 
+  // Method untuk fetch questionnaires by category name
+  Future<bool> fetchQuestionnairesByCategory({
+    String? categoryName,
+    int page = 1,
+    int perPage = 10,
+    String? search,
+    bool append = false,
+  }) async {
+    if (!append) {
+      setLoadingQuestionnaires(true);
+    }
+    clearQuestionnaireError();
+
+    try {
+      final data = await _questionnaireService.getQuestionnairesByCategory(
+        categoryName: categoryName,
+        page: page,
+        perPage: perPage,
+        search: search,
+      );
+
+      if (append && _questionnaireResponse != null) {
+        // Append new questionnaires to existing list
+        final existingQuestionnaires =
+            _questionnaireResponse!.data?.questionnaires ?? [];
+        final newQuestionnaires = data.data?.questionnaires ?? [];
+        data.data?.questionnaires = [
+          ...existingQuestionnaires,
+          ...newQuestionnaires
+        ];
+      }
+
+      _questionnaireResponse = data;
+      _currentPageData = page;
+      _selectedCategoryName = categoryName;
+
+      // Debug print untuk melihat response
+      if (kDebugMode) {
+        print("Questionnaires by Category Response received");
+        print("Category: $categoryName");
+        print("Metadata code: ${_questionnaireResponse?.metadata?.code}");
+        print(
+            "Total questionnaires: ${_questionnaireResponse?.data?.questionnaires?.length}");
+        print(
+            "Current page: ${_questionnaireResponse?.data?.meta?.currentPage}");
+        print("Total pages: ${_questionnaireResponse?.data?.meta?.lastPage}");
+      }
+
+      if (_questionnaireResponse?.metadata?.code == 200) {
+        setLoadingQuestionnaires(false);
+        return true;
+      } else {
+        setLoadingQuestionnaires(false);
+        setQuestionnaireError(_questionnaireResponse?.metadata?.message ??
+            'Failed to fetch questionnaires by category');
+        return false;
+      }
+    } catch (e) {
+      setLoadingQuestionnaires(false);
+      setQuestionnaireError(e.toString());
+      if (kDebugMode) {
+        print("Fetch Questionnaires by Category Error: $e");
+      }
+      return false;
+    }
+  }
+
+  // Method untuk set selected category name
+  void setSelectedCategoryName(String? categoryName) {
+    _selectedCategoryName = categoryName;
+    notifyListeners();
+  }
+
+  // Method untuk clear selected category
+  void clearSelectedCategory() {
+    _selectedCategoryName = null;
+    notifyListeners();
+  }
+
   // Method untuk clear questionnaire data
   void clearQuestionnaireData() {
     _questionnaireResponse = null;
@@ -412,6 +495,7 @@ class QuestionnaireProvider with ChangeNotifier {
     _currentPageData = 1;
     _currentCategory = null;
     _currentSearch = null;
+    _selectedCategoryName = null;
     notifyListeners();
   }
 

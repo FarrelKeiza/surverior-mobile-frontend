@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:surverior_frontend_mobile/providers/category_provider.dart';
 import 'package:surverior_frontend_mobile/providers/questionnaire_provider.dart';
 import 'package:surverior_frontend_mobile/providers/user_provider.dart';
 import 'package:surverior_frontend_mobile/providers/wallet_provider.dart';
@@ -21,6 +22,7 @@ class _HomePageState extends State<HomePage> {
     WidgetsBinding.instance.addPostFrameCallback((timestamp) {
       Provider.of<UserProvider>(context, listen: false).fetchUserProfile();
       Provider.of<WalletProvider>(context, listen: false).fetchWallet();
+      Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
       Provider.of<QuestionnaireProvider>(context, listen: false)
           .fetchQuestionnaires();
     });
@@ -52,27 +54,58 @@ class _HomePageState extends State<HomePage> {
                   alignment: Alignment.centerLeft,
                   child: Row(
                     children: [
-                      Flexible(
-                        child: FilterDropdownButtonWidget(
-                          hintText: "Progress",
-                          items: const [],
-                          suffixIcon: Icon(
-                            Icons.keyboard_arrow_down_outlined,
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Flexible(
-                        child: FilterDropdownButtonWidget(
-                          hintText: "Kategori",
-                          items: const [],
-                          suffixIcon: Icon(
-                            Icons.keyboard_arrow_down_outlined,
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                      ),
+                      // Flexible(
+                      //   child: FilterDropdownButtonWidget(
+                      //     hintText: "Progress",
+                      //     items: const [],
+                      //     suffixIcon: Icon(
+                      //       Icons.keyboard_arrow_down_outlined,
+                      //       color: Colors.grey[400],
+                      //     ),
+                      //   ),
+                      // ),
+                      // const SizedBox(width: 10),
+                      Consumer<CategoryProvider>(
+                        builder: (context, categoryProvider, child) {
+                          return Flexible(
+                            child: FilterDropdownButtonWidget(
+                              hintText: "Kategori",
+                              items:
+                                  categoryProvider.categories?.map((category) {
+                                        return DropdownMenuItem<String>(
+                                          value: category.name,
+                                          child: Text(category.name ?? ''),
+                                        );
+                                      }).toList() ??
+                                      [],
+                              onChanged: (value) {
+                                final questionnaireProvider =
+                                    Provider.of<QuestionnaireProvider>(context,
+                                        listen: false);
+
+                                if (value != null && value.isNotEmpty) {
+                                  // Set selected category name di provider
+                                  questionnaireProvider
+                                      .setSelectedCategoryName(value);
+                                  // Fetch questionnaires berdasarkan category name
+                                  questionnaireProvider
+                                      .fetchQuestionnairesByCategory(
+                                    categoryName: value,
+                                  );
+                                } else {
+                                  // Clear selected category dan fetch semua questionnaires
+                                  questionnaireProvider.clearSelectedCategory();
+                                  questionnaireProvider.refreshQuestionnaires();
+                                }
+                              },
+                              suffixIcon: Icon(
+                                Icons.keyboard_arrow_down_outlined,
+                                color: Colors.grey[400],
+                              ),
+                            ),
+                          );
+                        },
+                      )
                     ],
                   ),
                 ),
