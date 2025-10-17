@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:provider/provider.dart';
+import 'package:surverior_frontend_mobile/pages/questionnaire/builder/public_questionnaire_page.dart';
 import 'package:surverior_frontend_mobile/utils/theme_util.dart';
 import 'package:surverior_frontend_mobile/widgets/button_back_app_bar_widget.dart';
 import 'package:surverior_frontend_mobile/widgets/question_toolbar_widget.dart';
@@ -8,6 +9,7 @@ import 'package:surverior_frontend_mobile/widgets/question_type_widget.dart';
 import 'package:surverior_frontend_mobile/widgets/gradient_action_icon_button_widget.dart';
 
 import 'package:surverior_frontend_mobile/providers/questionnaire_provider.dart';
+import 'package:surverior_frontend_mobile/utils/navigator_util.dart';
 
 // class CreateQuestionPage extends StatefulWidget {
 //   const CreateQuestionPage({super.key});
@@ -75,7 +77,12 @@ class CreateQuestionPage extends HookWidget {
                   )),
               const SizedBox(width: 5),
               GradientActionIconButtonWidget(
-                  onPressed: () {},
+                  onPressed: () {
+                    NavigatorUtil.pushToDynamicPage(
+                      context,
+                      const PublicQuestionnairePage(),
+                    );
+                  },
                   icon: const Icon(
                     Icons.send,
                     size: 16,
@@ -113,8 +120,10 @@ class CreateQuestionPage extends HookWidget {
                   for (int i = 0; i < provider.currentPageQuestions.length; i++)
                     QuestionTypeWidget(
                       index: i + 1,
-                      controller: provider.currentPageQuestions[i].questionControllers,
-                      selectedQuestionType: provider.currentPageQuestions[i].type,
+                      controller:
+                          provider.currentPageQuestions[i].questionControllers,
+                      selectedQuestionType:
+                          provider.currentPageQuestions[i].type,
                     ),
                   QuestionToolbarWidget(
                     page: provider.currentPage,
