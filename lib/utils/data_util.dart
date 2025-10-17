@@ -1,7 +1,8 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 String baseUrl() {
-  return "http://72.60.210.20";
+  // return "http://72.60.210.20";
+  return "http://72.60.210.20:81";
 }
 
 String baseImageUrl() {
