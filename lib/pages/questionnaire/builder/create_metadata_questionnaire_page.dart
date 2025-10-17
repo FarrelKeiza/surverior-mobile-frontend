@@ -12,6 +12,7 @@ import 'package:surverior_frontend_mobile/widgets/gradient_bordered_card_widget.
 import 'package:surverior_frontend_mobile/widgets/question_widget.dart';
 
 import 'package:surverior_frontend_mobile/providers/category_provider.dart';
+import 'package:surverior_frontend_mobile/providers/questionnaire_provider.dart';
 import 'package:surverior_frontend_mobile/models/category.dart';
 
 //
@@ -193,7 +194,7 @@ class CreateMetadataQuestionnairePage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final categoryProvider = useMemoized(() => Provider.of<CategoryProvider>(context, listen: false));
-    final selectedCategory = useState<Category?>(null);
+    final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
 
     // Fetch categories once
     useEffect(() {
@@ -204,11 +205,6 @@ class CreateMetadataQuestionnairePage extends HookWidget {
     final categories = context.watch<CategoryProvider>().categories;
     final isLoading = context.watch<CategoryProvider>().isLoading;
     final error = context.watch<CategoryProvider>().error;
-
-    final titleController = useTextEditingController();
-    final descriptionController = useTextEditingController();
-    final targetRespondentController = useTextEditingController();
-    final deadlineController = useTextEditingController();
 
     return Scaffold(
       backgroundColor: white,
@@ -230,7 +226,7 @@ class CreateMetadataQuestionnairePage extends HookWidget {
                     child: Column(
                       children: [
                         TextFormField(
-                          controller: titleController,
+                          controller: questionnaireProvider.titleController,
                           style: secondaryTextStyle.copyWith(
                             fontSize: 20,
                             fontWeight: bold,
@@ -244,7 +240,7 @@ class CreateMetadataQuestionnairePage extends HookWidget {
                           ),
                         ),
                         TextFormField(
-                          controller: descriptionController,
+                          controller: questionnaireProvider.descriptionController,
                           style: secondaryTextStyle.copyWith(
                             fontWeight: bold,
                           ),
@@ -272,7 +268,7 @@ class CreateMetadataQuestionnairePage extends HookWidget {
                     label: "Masukkan jumlah target responden",
                     showLabel: false,
                     textInputType: TextInputType.number,
-                    controller: targetRespondentController,
+                    controller: questionnaireProvider.targetRespondentController,
                   ),
                   const QuestionWidget(
                     index: 2,
@@ -290,7 +286,7 @@ class CreateMetadataQuestionnairePage extends HookWidget {
                       color: black,
                     ),
                     enableDateInput: true,
-                    controller: deadlineController,
+                    controller: questionnaireProvider.deadlineController,
                   ),
                   const QuestionWidget(
                     index: 3,
@@ -314,7 +310,7 @@ class CreateMetadataQuestionnairePage extends HookWidget {
                             .toList() ??
                         [],
                     onChanged: (value) {
-                      selectedCategory.value = value as Category?;
+                      questionnaireProvider.setSelectedCategory(value as Category?);
                     },
                   ),
                   Text(
@@ -339,7 +335,7 @@ class CreateMetadataQuestionnairePage extends HookWidget {
                     items: const [],
                     onChanged: (value) {},
                   ),
-                  Text(error)
+                  if (error.isNotEmpty) Text(error)
                 ],
               ),
             ),
