@@ -9,6 +9,7 @@ class CustomDropdownButtonLabelledWidget extends StatelessWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.value,
+    this.paddingBottom = 20,
     required this.items,
     required this.onChanged,
   });
@@ -19,13 +20,14 @@ class CustomDropdownButtonLabelledWidget extends StatelessWidget {
   final List<DropdownMenuItem> items;
   final dynamic value;
   final Function(dynamic)? onChanged;
+  final double paddingBottom;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: defaultPadding),
+      padding: EdgeInsets.only(bottom: paddingBottom),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        // crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Visibility(
             visible: showLabel,
@@ -43,6 +45,8 @@ class CustomDropdownButtonLabelledWidget extends StatelessWidget {
             ),
           ),
           DropdownButtonFormField(
+            isExpanded: true,
+            isDense: true,
             items: items,
             value: value,
             onChanged: onChanged,
