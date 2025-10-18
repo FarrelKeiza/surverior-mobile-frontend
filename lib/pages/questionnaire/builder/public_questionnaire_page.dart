@@ -33,7 +33,7 @@ class PublicQuestionnairePage extends StatelessWidget {
             final int s = provider.totalQuestions;
             final int harga = (r * 100) + (s * r * 100);
             final String formattedHarga =
-                '${NumberFormat.decimalPattern('id').format(harga)} poin';
+                NumberFormat.decimalPattern('id').format(harga);
             return Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,7 +166,8 @@ class PublicQuestionnairePage extends StatelessWidget {
                               // Show success message
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Kuesioner berhasil dipublikasikan!'),
+                                  content: Text(
+                                      'Kuesioner berhasil dipublikasikan!'),
                                   backgroundColor: Colors.green,
                                 ),
                               );
@@ -183,7 +184,8 @@ class PublicQuestionnairePage extends StatelessWidget {
                               // Show error message
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('Gagal mempublikasikan kuesioner: $e'),
+                                  content: Text(
+                                      'Gagal mempublikasikan kuesioner: $e'),
                                   backgroundColor: Colors.red,
                                 ),
                               );
@@ -207,7 +209,8 @@ class PublicQuestionnairePage extends StatelessWidget {
                           )
                         : Text(
                             'Publikasikan',
-                            style: GoogleFonts.onest(fontSize: 16, color: white),
+                            style:
+                                GoogleFonts.onest(fontSize: 16, color: white),
                           ),
                   ),
                 )

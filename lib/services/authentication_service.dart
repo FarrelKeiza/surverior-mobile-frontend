@@ -98,7 +98,7 @@ class AuthenticationService {
       var response = await post(
         Uri.parse(apiURL),
         headers: header(false),
-        body: {
+        body: jsonEncode({
           "name": name,
           "email": email,
           "password": password,
@@ -122,7 +122,8 @@ class AuthenticationService {
           "department": department,
           "college_id": collegeId,
           "department_id": departmentId,
-        });
+        }),
+      );
 
       var jsonObject = jsonDecode(response.body);
 
