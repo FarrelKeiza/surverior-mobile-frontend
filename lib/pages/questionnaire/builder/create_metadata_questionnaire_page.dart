@@ -193,7 +193,8 @@ class CreateMetadataQuestionnairePage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final categoryProvider = useMemoized(() => Provider.of<CategoryProvider>(context, listen: false));
+    final categoryProvider = useMemoized(
+        () => Provider.of<CategoryProvider>(context, listen: false));
     final questionnaireProvider = Provider.of<QuestionnaireProvider>(context);
 
     // Fetch categories once
@@ -240,7 +241,8 @@ class CreateMetadataQuestionnairePage extends HookWidget {
                           ),
                         ),
                         TextFormField(
-                          controller: questionnaireProvider.descriptionController,
+                          controller:
+                              questionnaireProvider.descriptionController,
                           style: secondaryTextStyle.copyWith(
                             fontWeight: bold,
                           ),
@@ -268,7 +270,8 @@ class CreateMetadataQuestionnairePage extends HookWidget {
                     label: "Masukkan jumlah target responden",
                     showLabel: false,
                     textInputType: TextInputType.number,
-                    controller: questionnaireProvider.targetRespondentController,
+                    controller:
+                        questionnaireProvider.targetRespondentController,
                   ),
                   const QuestionWidget(
                     index: 2,
@@ -310,9 +313,11 @@ class CreateMetadataQuestionnairePage extends HookWidget {
                             .toList() ??
                         [],
                     onChanged: (value) {
-                      questionnaireProvider.setSelectedCategory(value as Category?);
+                      questionnaireProvider
+                          .setSelectedCategory(value as Category?);
                     },
                   ),
+                  if (error.isNotEmpty) Text(error),
                   Text(
                     "Profiling Responden",
                     style: secondaryTextStyle.copyWith(
@@ -335,7 +340,6 @@ class CreateMetadataQuestionnairePage extends HookWidget {
                     items: const [],
                     onChanged: (value) {},
                   ),
-                  if (error.isNotEmpty) Text(error)
                 ],
               ),
             ),
@@ -351,6 +355,47 @@ class CreateMetadataQuestionnairePage extends HookWidget {
                   ),
                   isLoading: false,
                   onPressed: () {
+                    final title =
+                        questionnaireProvider.titleController.text.trim();
+                    final description =
+                        questionnaireProvider.descriptionController.text.trim();
+                    final targetText = questionnaireProvider
+                        .targetRespondentController.text
+                        .trim();
+                    final deadline =
+                        questionnaireProvider.deadlineController.text.trim();
+                    final category = questionnaireProvider.selectedCategory;
+
+                    String? error;
+                    if (title.isEmpty) {
+                      error = 'Judul kuesioner wajib diisi';
+                    } else if (description.isEmpty) {
+                      error = 'Deskripsi kuesioner wajib diisi';
+                    } else if (targetText.isEmpty) {
+                      error = 'Jumlah target responden wajib diisi';
+                    } else {
+                      final target = int.tryParse(targetText);
+                      if (target == null || target <= 0) {
+                        error = 'Masukkan jumlah responden yang valid';
+                      }
+                    }
+                    if (error == null && deadline.isEmpty) {
+                      error = 'Batas tanggal pengisian wajib diisi';
+                    }
+                    if (error == null && category == null) {
+                      error = 'Kategori kuesioner wajib dipilih';
+                    }
+
+                    if (error != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(error),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
                     NavigatorUtil.pushToDynamicPage(
                       context,
                       const CreateQuestionPage(),

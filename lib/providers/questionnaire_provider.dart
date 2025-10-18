@@ -85,13 +85,19 @@ class QuestionnaireProvider with ChangeNotifier {
   // Questionnaire fetch getters
   QuestionnaireResponseModel? get questionnaireResponse =>
       _questionnaireResponse;
+
   bool get isLoadingQuestionnaires => _isLoadingQuestionnaires;
+
   String get questionnaireError => _questionnaireError;
+
   List<QuestionnaireModel> get questionnaires =>
       _questionnaireResponse?.data?.questionnaires ?? [];
+
   QuestionnaireMetaData? get questionnaireMeta =>
       _questionnaireResponse?.data?.meta;
+
   int get currentPageData => _currentPageData;
+
   String? get selectedCategoryName => _selectedCategoryName;
 
   // Getters
@@ -118,6 +124,10 @@ class QuestionnaireProvider with ChangeNotifier {
   TextEditingController get deadlineController => _deadlineController;
 
   cat.Category? get selectedCategory => _selectedCategory;
+
+  // NEW: total questions across all pages
+  int get totalQuestions =>
+      _pageQuestions.values.fold<int>(0, (sum, list) => sum + list.length);
 
   // Navigation methods
   void nextPage() {
@@ -749,8 +759,221 @@ class QuestionnaireProvider with ChangeNotifier {
     }
   }
 
-  // Empty method for creating questionnaire
-  Future<void> createQuestionnaire() async {}
+  // NEW: Questionnaire creation state
+  bool _isCreatingQuestionnaire = false;
+
+  // NEW: Getter for questionnaire creation state
+  bool get isCreatingQuestionnaire => _isCreatingQuestionnaire;
+
+  // Helper method to map question types
+  String _mapQuestionType(int type) {
+    switch (type) {
+      case 0:
+        return 'multiple_choice';
+      case 1:
+        return 'checkbox';
+      case 2:
+        return 'short_answer';
+      case 3:
+        return 'paragraph';
+      case 4:
+        return 'grid';
+      case 5:
+        return 'text';
+      case 6:
+        return 'image';
+      default:
+        return 'multiple_choice';
+    }
+  }
+
+  // Helper method to generate URL slug
+  String _generateUrlSlug(String title) {
+    return title
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
+        .replaceAll(RegExp(r'\s+'), '-')
+        .replaceAll(RegExp(r'-+'), '-')
+        .trim();
+  }
+
+  // Implement questionnaire creation
+  Future<void> createQuestionnaire() async {
+    try {
+      _isCreatingQuestionnaire = true;
+      notifyListeners();
+
+      // Validate required fields
+      if (_titleController.text.trim().isEmpty ||
+          _descriptionController.text.trim().isEmpty ||
+          _targetRespondentController.text.trim().isEmpty ||
+          _deadlineController.text.trim().isEmpty ||
+          _selectedCategory == null) {
+        throw Exception('Please fill in all required fields');
+      }
+
+      final int respondentTarget =
+          int.tryParse(_targetRespondentController.text.trim()) ?? 0;
+      if (respondentTarget <= 0) {
+        throw Exception('Please enter a valid number of respondents');
+      }
+
+      // Validate that there are questions
+      if (_pageQuestions.isEmpty) {
+        throw Exception(
+            'Please add at least one question to the questionnaire');
+      }
+
+      // Validate all question texts are not empty
+      for (var pageEntry in _pageQuestions.entries) {
+        final pageNumber = pageEntry.key;
+        final questions = pageEntry.value;
+
+        for (int i = 0; i < questions.length; i++) {
+          final questionText = questions[i].questionControllers.text.trim();
+          if (questionText.isEmpty) {
+            throw Exception(
+                'Question ${i + 1} on page $pageNumber cannot be empty. Please fill in all question texts.');
+          }
+        }
+      }
+
+      // Calculate cost using the formula: Harga = (R × 100) + (S × R × 100)
+      final int totalQuestions = this.totalQuestions;
+      final int cost =
+          (respondentTarget * 100) + (totalQuestions * respondentTarget * 100);
+      final int reward = (cost * 0.2).round(); // 20% of cost as reward
+
+      // Generate URL slug
+      final String urlSlug = _generateUrlSlug(_titleController.text.trim());
+      final String url = 'https://surverior.app/surveys/$urlSlug';
+
+      // Prepare contents array with text content only
+      List<Map<String, dynamic>> contents = [];
+
+      // Prepare questions array
+      List<Map<String, dynamic>> questions = [];
+      int questionOrder = 1;
+
+      for (var pageQuestions in _pageQuestions.values) {
+        for (var question in pageQuestions) {
+          final questionText = question.questionControllers.text.trim();
+
+          // Double-check question text is not empty (should be caught above)
+          if (questionText.isEmpty) {
+            throw Exception('Found empty question text during processing');
+          }
+
+          if (question.type == 5) {
+            // Text content question
+            contents.add({
+              "content_type": "text",
+              "content_body": question.options.textContent,
+              "order": questionOrder++,
+            });
+            continue; // Skip adding to questions array
+          }
+
+          Map<String, dynamic> questionData = {
+            "question_text": questionText,
+            "question_type": _mapQuestionType(question.type),
+            "is_required": true,
+            "order": questionOrder++,
+          };
+
+          // Add options for question types that have them
+          List<Map<String, dynamic>> options = [];
+          switch (question.type) {
+            case 0: // Multiple choice
+              for (int i = 0;
+                  i < question.options.multipleChoiceOptions.length;
+                  i++) {
+                options.add({
+                  "option_text": question.options.multipleChoiceOptions[i],
+                  "value": question.options.multipleChoiceOptions[i]
+                      .toLowerCase()
+                      .replaceAll(' ', '_'),
+                  "column_label": "Choice",
+                  "row_label": "Option",
+                  "order": i + 1,
+                });
+              }
+              break;
+            case 1: // Checkbox
+              for (int i = 0;
+                  i < question.options.checkboxOptions.length;
+                  i++) {
+                options.add({
+                  "option_text": question.options.checkboxOptions[i],
+                  "value": question.options.checkboxOptions[i]
+                      .toLowerCase()
+                      .replaceAll(' ', '_'),
+                  "column_label": "Selection",
+                  "row_label": "Option",
+                  "order": i + 1,
+                });
+              }
+              break;
+            case 4: // Grid
+              int optionOrder = 1;
+              for (var row in question.options.gridRows) {
+                for (var col in question.options.gridCols) {
+                  options.add({
+                    "row_label": row,
+                    "column_label": col,
+                    "value":
+                        "${row.toLowerCase().replaceAll(' ', '_')}_${col.toLowerCase().replaceAll(' ', '_')}",
+                    "order": optionOrder++,
+                  });
+                }
+              }
+              break;
+          }
+
+          if (options.isNotEmpty) {
+            questionData["options"] = options;
+          }
+
+          questions.add(questionData);
+        }
+      }
+
+      // Add section break content after questions if there are multiple pages
+      // if (_pageQuestions.length > 1) {
+      //   contents.add({
+      //     "content_type": "text",
+      //     "content_body": "Terima kasih telah mengisi kuesioner ini. Data Anda sangat berharga bagi penelitian kami.",
+      //     "order": questionOrder,
+      //   });
+      // }
+
+      // Call the API
+      await _questionnaireService.createQuestionnaire(
+        categoryName: _selectedCategory!.name ?? '',
+        topic: _titleController.text.trim(),
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        respondentTarget: respondentTarget,
+        deadline: _deadlineController.text.trim(),
+        cost: cost,
+        reward: reward,
+        isPublished: true,
+        url: url,
+        profiles: null,
+        contents: contents,
+        questions: questions,
+      );
+
+      // Success - questionnaire created
+      clearQuestionnaireData(); // Clear data after successful creation
+    } catch (e) {
+      debugPrint("Error creating questionnaire: $e");
+      rethrow;
+    } finally {
+      _isCreatingQuestionnaire = false;
+      notifyListeners();
+    }
+  }
 
   // Cleanup
   @override

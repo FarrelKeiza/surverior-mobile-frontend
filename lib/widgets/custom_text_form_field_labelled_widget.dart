@@ -49,7 +49,7 @@ class CustomTextFormFieldLabelledWidget extends StatelessWidget {
       lastDate: DateTime(2100),
     );
     if (picked != null) {
-      controller.text = "${picked.day}/${picked.month}/${picked.year}";
+      controller.text = "${picked.year}-${picked.month}-${picked.day}";
     }
   }
 

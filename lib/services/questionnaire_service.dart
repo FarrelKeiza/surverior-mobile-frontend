@@ -163,9 +163,73 @@ class QuestionnaireService {
     }
   }
 
-  Future<void> createQuestionnaire() async {
+  Future<Map<String, dynamic>> createQuestionnaire({
+    required String categoryName,
+    required String topic,
+    required String title,
+    required String description,
+    required int respondentTarget,
+    required String deadline,
+    required int cost,
+    required int reward,
+    required bool isPublished,
+    required String url,
+    Map<String, dynamic>? profiles,
+    required List<Map<String, dynamic>> contents,
+    required List<Map<String, dynamic>> questions,
+  }) async {
     String apiURL = "${baseApiUrl()}/questionnaires";
-    debugPrint("Create questionnaire endpoint: $apiURL");
+
+    Map<String, dynamic> requestBody = {
+      "category_name": categoryName,
+      "topic": topic,
+      "title": title,
+      "description": description,
+      "respondent_target": respondentTarget,
+      "deadline": deadline,
+      "cost": cost,
+      "reward": reward,
+      "is_published": isPublished,
+      "url": url,
+      "profiles": profiles,
+      "contents": contents,
+      "questions": questions,
+    };
+
+    try {
+      // Get token from storage
+      String? token = await storage.read(key: "token");
+
+      var response = await post(
+        Uri.parse(apiURL),
+        headers: header(true, token: token),
+        body: jsonEncode(requestBody),
+      );
+
+      var jsonObject = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return jsonObject;
+      } else if (response.statusCode == 401) {
+        // Handle unauthorized access
+        String errorMessage =
+            jsonObject['metadata']?['message'] ?? 'Unauthorized access';
+        throw Exception(errorMessage);
+      } else if (response.statusCode == 400) {
+        // Handle bad request
+        String errorMessage =
+            jsonObject['metadata']?['message'] ?? 'Invalid request data';
+        throw Exception(errorMessage);
+      } else {
+        // Handle other errors
+        String errorMessage = jsonObject['metadata']?['message'] ??
+            'Failed to create questionnaire';
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      debugPrint("Create questionnaire error: $e");
+      throw Exception("Failed to create questionnaire: $e");
+    }
   }
 
   Future<QuestionnaireResponseModel> deleteQuestionnaire(String id) async {
