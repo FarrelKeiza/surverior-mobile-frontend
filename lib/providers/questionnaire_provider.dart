@@ -980,7 +980,7 @@ class QuestionnaireProvider with ChangeNotifier {
 
         for (int i = 0; i < questions.length; i++) {
           final questionText = questions[i].questionControllers.text.trim();
-          if (questionText.isEmpty) {
+          if (questionText.isEmpty && (questions[i].type != 5 && questions[i].type != 6)) {
             throw Exception(
                 'Question ${i + 1} on page $pageNumber cannot be empty. Please fill in all question texts.');
           }
@@ -1010,7 +1010,7 @@ class QuestionnaireProvider with ChangeNotifier {
           final questionText = question.questionControllers.text.trim();
 
           // Double-check question text is not empty (should be caught above)
-          if (questionText.isEmpty) {
+          if (questionText.isEmpty && (question.type != 5 && question.type != 6)) {
             throw Exception('Found empty question text during processing');
           }
 

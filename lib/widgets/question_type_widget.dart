@@ -42,10 +42,11 @@ class QuestionTypeWidget extends HookWidget {
         ),
         GradientBorderedCardWidget(
           child: Column(
+            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
-                  Expanded(
+                  if (selectedQuestionType != 5 && selectedQuestionType != 6) Expanded(
                     child: TextFormField(
                       controller: controller,
                       style: secondaryTextStyle,
@@ -55,6 +56,8 @@ class QuestionTypeWidget extends HookWidget {
                       ),
                     ),
                   ),
+                  if (selectedQuestionType == 5 || selectedQuestionType == 6)
+                    Expanded(child: Container()),
                   Consumer<QuestionnaireProvider>(builder: (ctx, provider, widget) {
                     return IconButton(
                       onPressed: () {
