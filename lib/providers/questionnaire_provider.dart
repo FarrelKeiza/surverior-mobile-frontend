@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:surverior_frontend_mobile/models/category.dart' as cat;
 import 'package:surverior_frontend_mobile/models/questionnaire_model.dart';
 import 'package:surverior_frontend_mobile/services/questionnaire_service.dart';
+import 'package:surverior_frontend_mobile/utils/data_util.dart';
+import 'dart:convert';
 
 class QuestionOptions {
   List<String> multipleChoiceOptions;
@@ -80,7 +82,22 @@ class QuestionnaireProvider with ChangeNotifier {
   final TextEditingController _targetRespondentController =
       TextEditingController();
   final TextEditingController _deadlineController = TextEditingController();
+  final TextEditingController _yearInController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
   cat.Category? _selectedCategory;
+
+  // Profiling state and persistence
+  bool _isProfiling = false;
+  String? _collegeId;
+  String? _educationId;
+  String? _departmentId;
+  String? _dateIn;
+  int? _minAge;
+  int? _maxAge;
+  String? _provinceId;
+  String? _cityId;
+  String? _gender;
+  String? _marriedStatus;
 
   // Questionnaire fetch getters
   QuestionnaireResponseModel? get questionnaireResponse =>
@@ -122,6 +139,10 @@ class QuestionnaireProvider with ChangeNotifier {
       _targetRespondentController;
 
   TextEditingController get deadlineController => _deadlineController;
+
+  TextEditingController get yearInController => _yearInController;
+
+  TextEditingController get ageController => _ageController;
 
   cat.Category? get selectedCategory => _selectedCategory;
 
@@ -765,6 +786,134 @@ class QuestionnaireProvider with ChangeNotifier {
   // NEW: Getter for questionnaire creation state
   bool get isCreatingQuestionnaire => _isCreatingQuestionnaire;
 
+  // Profiling getters
+  bool get isProfiling => _isProfiling;
+
+  String? get collegeId => _collegeId;
+
+  String? get educationId => _educationId;
+
+  String? get departmentId => _departmentId;
+
+  String? get dateIn => _dateIn;
+
+  int? get minAge => _minAge;
+
+  int? get maxAge => _maxAge;
+
+  String? get provinceId => _provinceId;
+
+  String? get cityId => _cityId;
+
+  String? get gender => _gender;
+
+  String? get marriedStatus => _marriedStatus;
+
+  // Profile data as Map (for API)
+  Map<String, dynamic>? get profiles {
+    if (!_isProfiling) return null;
+
+    if (_ageController.text.isNotEmpty) {
+      List<String> splitAge = _ageController.text.split('-');
+      _minAge = int.tryParse(splitAge[0].trim());
+      _maxAge = int.tryParse(splitAge[1].trim());
+    }
+
+    if (_yearInController.text.isNotEmpty) {
+      _dateIn = _yearInController.text.trim();
+    }
+
+    return {
+      "college_id": _collegeId,
+      "education_id": _educationId,
+      "department_id": _departmentId,
+      "date_in": _dateIn,
+      "min_age": _minAge,
+      "max_age": _maxAge,
+      "province_id": _provinceId, // Always null for now
+      "city_id": _cityId,
+      "gender": _gender,
+      "married_status": _marriedStatus,
+    };
+  }
+
+  // Profiling methods
+  set isProfiling(bool value) {
+    _isProfiling = value;
+    notifyListeners();
+  }
+
+  set collegeId(String? value) {
+    _collegeId = value;
+    notifyListeners();
+  }
+
+  set educationId(String? value) {
+    _educationId = value;
+    notifyListeners();
+  }
+
+  set departmentId(String? value) {
+    _departmentId = value;
+    notifyListeners();
+  }
+
+  set dateIn(String? value) {
+    _dateIn = value;
+    notifyListeners();
+  }
+
+  set ageRange(List<int?> range) {
+    _minAge = range.isNotEmpty ? range[0] : null;
+    _maxAge = range.length > 1 ? range[1] : null;
+    notifyListeners();
+  }
+
+  set minAge(int? value) {
+    _minAge = value;
+    notifyListeners();
+  }
+
+  set maxAge(int? value) {
+    _maxAge = value;
+    notifyListeners();
+  }
+
+  set provinceId(String? value) {
+    _provinceId = value;
+    notifyListeners();
+  }
+
+  set cityId(String? value) {
+    _cityId = value;
+    notifyListeners();
+  }
+
+  set gender(String? value) {
+    _gender = value;
+    notifyListeners();
+  }
+
+  set marriedStatus(String? value) {
+    _marriedStatus = value;
+    notifyListeners();
+  }
+
+  void clearProfilingData() {
+    _isProfiling = false;
+    _collegeId = null;
+    _educationId = null;
+    _departmentId = null;
+    _dateIn = null;
+    _minAge = null;
+    _maxAge = null;
+    _provinceId = null;
+    _cityId = null;
+    _gender = null;
+    _marriedStatus = null;
+    notifyListeners();
+  }
+
   // Helper method to map question types
   String _mapQuestionType(int type) {
     switch (type) {
@@ -842,7 +991,8 @@ class QuestionnaireProvider with ChangeNotifier {
       final int totalQuestions = this.totalQuestions;
       final int cost =
           (respondentTarget * 100) + (totalQuestions * respondentTarget * 100);
-      final int reward = (cost * 0.2).round(); // 20% of cost as reward
+      final int reward = ((cost * 0.75).round() / respondentTarget)
+          .round(); // 75%/respondentTarget of cost as reward
 
       // Generate URL slug
       final String urlSlug = _generateUrlSlug(_titleController.text.trim());
@@ -959,7 +1109,8 @@ class QuestionnaireProvider with ChangeNotifier {
         reward: reward,
         isPublished: true,
         url: url,
-        profiles: null,
+        profiles: profiles,
+        // Use the profiles getter which returns null if profiling is disabled
         contents: contents,
         questions: questions,
       );
@@ -982,6 +1133,8 @@ class QuestionnaireProvider with ChangeNotifier {
     _descriptionController.dispose();
     _targetRespondentController.dispose();
     _deadlineController.dispose();
+    _yearInController.dispose();
+    _ageController.dispose();
 
     // Dispose all question controllers
     for (var pageQuestions in _pageQuestions.values) {

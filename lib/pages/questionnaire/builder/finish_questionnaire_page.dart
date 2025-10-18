@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:surverior_frontend_mobile/pages/main/home_page.dart';
 
 import 'package:surverior_frontend_mobile/utils/theme_util.dart';
 import 'package:surverior_frontend_mobile/utils/navigator_util.dart';
@@ -94,7 +95,7 @@ class FinishQuestionnairePage extends StatelessWidget {
                     onPressed: () {
                       NavigatorUtil.pushToDynamicPage(
                         context,
-                        const FinishQuestionnairePage(),
+                        const HomePage(),
                       );
                     },
                     style: ElevatedButton.styleFrom(

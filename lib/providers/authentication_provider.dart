@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:surverior_frontend_mobile/models/authentication_model.dart';
 import 'package:surverior_frontend_mobile/models/otp_model.dart';
 import 'package:surverior_frontend_mobile/services/authentication_service.dart';
+import 'package:surverior_frontend_mobile/utils/data_util.dart';
+import 'dart:convert';
 
 class AuthenticationProvider with ChangeNotifier {
   final _authenticationService = AuthenticationService();
@@ -148,6 +150,12 @@ class AuthenticationProvider with ChangeNotifier {
       _authenticationModel = data;
 
       if (_authenticationModel?.metadata?.code == 200) {
+        // Save authentication data to persistent storage after successful login
+        await _saveAuthData();
+        // Also save the access token separately for backward compatibility
+        if (_authenticationModel?.data?.accessToken != null) {
+          await storage.write(key: 'token', value: _authenticationModel!.data!.accessToken!);
+        }
         checkLoading(false);
         return true;
       } else {
@@ -602,5 +610,52 @@ class AuthenticationProvider with ChangeNotifier {
     } finally {
       notifyListeners();
     }
+  }
+
+  // Persistence methods for user data
+  Future<void> _saveAuthData() async {
+    if (_authenticationModel != null) {
+      final authDataJson = jsonEncode(_authenticationModel!.toJson());
+      await storage.write(key: 'auth_data', value: authDataJson);
+    }
+  }
+
+  Future<void> loadAuthData() async {
+    try {
+      final authDataString = await storage.read(key: 'auth_data');
+      if (authDataString != null) {
+        final authDataJson = jsonDecode(authDataString);
+        _authenticationModel = AuthenticationModel.fromJson(authDataJson);
+        notifyListeners();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading auth data: $e');
+      }
+    }
+  }
+
+  Future<void> clearAuthData() async {
+    await storage.delete(key: 'auth_data');
+    await storage.delete(key: 'token');
+    _authenticationModel = null;
+    notifyListeners();
+  }
+
+  // Getters for user data
+  bool get isAcademic {
+    return _authenticationModel?.data?.endUser?.isAcademic ?? false;
+  }
+
+  bool get isAuthenticated {
+    return _authenticationModel?.data?.accessToken != null;
+  }
+
+  String? get userName {
+    return _authenticationModel?.data?.user?.name;
+  }
+
+  String? get userEmail {
+    return _authenticationModel?.data?.user?.email;
   }
 }
