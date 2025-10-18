@@ -3,6 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:surverior_frontend_mobile/pages/questionnaire/builder/finish_questionnaire_page.dart';
+import 'package:surverior_frontend_mobile/providers/city_provider.dart';
+import 'package:surverior_frontend_mobile/providers/college_provider.dart';
+import 'package:surverior_frontend_mobile/providers/department_provider.dart';
+import 'package:surverior_frontend_mobile/providers/education_provider.dart';
 import 'package:surverior_frontend_mobile/providers/questionnaire_provider.dart';
 
 import 'package:surverior_frontend_mobile/utils/theme_util.dart';
@@ -26,11 +30,14 @@ class PublicQuestionnairePage extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: defaultPadding),
-          child:
-              Consumer<QuestionnaireProvider>(builder: (context, provider, _) {
-            final int r =
-                int.tryParse(provider.targetRespondentController.text) ?? 0;
-            final int s = provider.totalQuestions;
+          child: Consumer5<QuestionnaireProvider, CollegeProvider,
+                  DepartmentProvider, CityProvider, EducationProvider>(
+              builder: (context, questionnaireProvider, collegeProvider,
+                  departmentProvider, cityProvider, educationProvider, _) {
+            final int r = int.tryParse(
+                    questionnaireProvider.targetRespondentController.text) ??
+                0;
+            final int s = questionnaireProvider.totalQuestions;
             final int harga = (r * 100) + (s * r * 100);
             final String formattedHarga =
                 NumberFormat.decimalPattern('id').format(harga);
@@ -60,7 +67,7 @@ class PublicQuestionnairePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 29),
                 Text(
-                  provider.titleController.text,
+                  questionnaireProvider.titleController.text,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.onest(
@@ -69,7 +76,7 @@ class PublicQuestionnairePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  provider.descriptionController.text,
+                  questionnaireProvider.descriptionController.text,
                   style: GoogleFonts.onest(
                     fontWeight: FontWeight.w300,
                     fontSize: 16,
@@ -81,19 +88,21 @@ class PublicQuestionnairePage extends StatelessWidget {
                   children: [
                     InformationWidget(
                       icon: Icons.question_mark,
-                      label: '${provider.totalQuestions} Pertanyaan',
+                      label:
+                          '${questionnaireProvider.totalQuestions} Pertanyaan',
                     ),
                     const SizedBox(width: 10),
                     InformationWidget(
                       icon: Icons.person,
                       label:
-                          '${provider.targetRespondentController.text.isNotEmpty ? provider.targetRespondentController.text : '0'} Responden',
+                          '${questionnaireProvider.targetRespondentController.text.isNotEmpty ? questionnaireProvider.targetRespondentController.text : '0'} Responden',
                     ),
                     const SizedBox(width: 10),
                     InformationWidget(
                       icon: Icons.date_range,
-                      label: provider.deadlineController.text.isNotEmpty
-                          ? provider.deadlineController.text
+                      label: questionnaireProvider
+                              .deadlineController.text.isNotEmpty
+                          ? questionnaireProvider.deadlineController.text
                           : 'Tidak ditetapkan',
                     ),
                   ],
@@ -101,16 +110,55 @@ class PublicQuestionnairePage extends StatelessWidget {
                 const SizedBox(height: 10),
                 const Text('Kriteria Responden:'),
                 const SizedBox(height: 6),
-                const Wrap(
-                  spacing: 4,
-                  runSpacing: 10,
-                  children: [
-                    GradientChipWidget(label: 'Mahasiswa'),
-                    GradientChipWidget(label: 'Bidang Keilmuan Komputer'),
-                    GradientChipWidget(label: 'Domisili Bandasung'),
-                    GradientChipWidget(label: '20 Tahun Keatas'),
-                  ],
-                ),
+                if (questionnaireProvider.isProfiling)
+                  Wrap(
+                    spacing: 4,
+                    runSpacing: 10,
+                    children:
+                        questionnaireProvider.profiles!.entries.map((item) {
+                      if (item.value == null || item.value == '') {
+                        return const SizedBox.shrink();
+                      }
+
+                      var data = item.value;
+                      final key = item.key;
+
+                      if (key == 'college_id') {
+                        final list = collegeProvider.colleges;
+                        final idx =
+                            list?.indexWhere((e) => e.id == item.value) ?? -1;
+                        if (idx >= 0) data = list![idx].name ?? item.value;
+                      } else if (key == 'department_id') {
+                        final list = departmentProvider.departments;
+                        final idx =
+                            list?.indexWhere((e) => e.id == item.value) ?? -1;
+                        if (idx >= 0) data = list![idx].name ?? item.value;
+                      } else if (key == 'city_id') {
+                        final list = cityProvider.cities;
+                        final idx =
+                            list?.indexWhere((e) => e.id == item.value) ?? -1;
+                        if (idx >= 0) data = list![idx].name ?? item.value;
+                      } else if (key == 'education_id') {
+                        final list = educationProvider.educations;
+                        final idx =
+                            list?.indexWhere((e) => e.id == item.value) ?? -1;
+                        if (idx >= 0) {
+                          data = list![idx].educationName ?? item.value;
+                        }
+                      }
+
+                      return GradientChipWidget(label: data?.toString() ?? '');
+                    }).toList(),
+                  ),
+                if (!questionnaireProvider.isProfiling)
+                  Text(
+                    'Tidak ada kriteria responden yang ditetapkan.',
+                    style: GoogleFonts.onest(
+                      color: black1,
+                      fontSize: 13,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -144,7 +192,7 @@ class PublicQuestionnairePage extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: provider.isCreatingQuestionnaire
+                    onPressed: questionnaireProvider.isCreatingQuestionnaire
                         ? null
                         : () async {
                             try {
@@ -158,7 +206,7 @@ class PublicQuestionnairePage extends StatelessWidget {
                               );
 
                               // Call the createQuestionnaire API
-                              await provider.createQuestionnaire();
+                              await questionnaireProvider.createQuestionnaire();
 
                               // Close loading dialog
                               Navigator.of(context).pop();
@@ -198,7 +246,7 @@ class PublicQuestionnairePage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
-                    child: provider.isCreatingQuestionnaire
+                    child: questionnaireProvider.isCreatingQuestionnaire
                         ? const SizedBox(
                             height: 20,
                             width: 20,
